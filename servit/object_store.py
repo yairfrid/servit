@@ -1,7 +1,8 @@
 from typing import Generic, TypeVar
 from abc import ABC, abstractmethod
 
-ObjType = TypeVar('ObjType')
+ObjType = TypeVar("ObjType")
+
 
 class ObjectStore(ABC, Generic[ObjType]):
     typ: ObjType
@@ -16,11 +17,10 @@ class ObjectStore(ABC, Generic[ObjType]):
     def get(_id: str) -> ObjType:
         pass
 
-        
-class InMemoryObjectStore(ObjectStore):
 
+class InMemoryObjectStore(ObjectStore):
     def __init__(self, typ: ObjType):
-        super().__init__(self, typ)
+        super().__init__(typ)
         self.map = {}
 
     def set(obj: ObjType) -> str:

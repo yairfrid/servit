@@ -2,18 +2,21 @@ import inspect
 import functools
 from types import FunctionType
 import itertools
-from typing import Type
+from typing import Type, Optional
+
+from pydantic import BaseModel
 
 from .object_store import ObjectStore
 
 
 def get_methods(cls):
-
-    return set([
-        val
-        for key, val in cls.__dict__.items()
-        if not key.startswith("_") and callable(val)
-    ])
+    return set(
+        [
+            val
+            for key, val in cls.__dict__.items()
+            if not key.startswith("_") and callable(val)
+        ]
+    )
 
 
 def get_method_name(method):
@@ -41,8 +44,14 @@ def camel_to_snake(st):
     return st[0].lower() + "".join(ret)
 
 
-def serve(app, object_store: Type[ObjectStore] = None):
+def serve(app, *, store: Optional[Type[ObjectStore]] = None):
     def inner(cls):
+        if not issubclass(cls, BaseModel):
+            raise TypeError("Only pydantic BaseModels can be served")
+
+        if store is not None:
+            instance = store(typ=cls)
+            setattr(cls, "_servit_obj_store", instance)
         methods = get_methods(cls) - get_parent_methods(cls)
         for method in methods:
             if isinstance(method, classmethod):
