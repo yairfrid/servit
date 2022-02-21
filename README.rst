@@ -5,5 +5,6 @@ Then, to trigger the test, run `python tests/<TEST_FILE>`
 
 
 TODO:
-[ ] Create a test runner (a script that goes over all of the tests and runs them like in the description above, also redo the description afterwards and add a poetry task so `poetry test` works as expected
-[ ] Create a test for documentation
+[ ] Convert tests to pytest, run the server async in a fixture
+[ ] add full path (directory path and file name) before class name when publishing an endpoint, so we can structure the server using python packages
+[ ] Create a test for swagger documentation
