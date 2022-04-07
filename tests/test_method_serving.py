@@ -1,4 +1,10 @@
-def server():
+import pytest
+import json
+from fastapi.testclient import TestClient
+
+
+@pytest.fixture
+def client():
     from pydantic import BaseModel
     from fastapi import FastAPI
     from servit import serve
@@ -17,34 +23,27 @@ def server():
         def get_name(self, start: int = 3):
             return self.name[start:]
 
-    return app
+    return TestClient(app)
 
 
-def client():
-    import requests
-    import json
-
-    url = "http://localhost:8000/test_class"
-
-    get_res = requests.post(f"{url}/get?name=hello")
-
-    get_res.raise_for_status()
-    assert get_res.json() == {"name": "hello"}
-
-    get_name_no_param_res = requests.post(
-        f"{url}/get_name", data=json.dumps({"name": "Hello world"})
-    )
-    get_name_no_param_res.raise_for_status()
-    get_name_no_param_res.json() == {"name": "lo world"}
-
-    get_name_param_res = requests.post(
-        f"{url}/get_name?start=0", data=json.dumps({"name": "Hello world"})
-    )
-    get_name_param_res.raise_for_status()
-    get_name_param_res.json() == {"name": "Hello world"}
-
-    # TODO: Error cases (idx out of bounds, bad index, etc.. see that error messages are fine
+def test_only_post_allowed(client):
+    assert client.get("test_class/get?name=hello").status_code == 405
+    assert client.put("test_class/get?name=hello").status_code == 405
+    assert client.delete("test_class/get?name=hello").status_code == 405
 
 
-if __name__ == "__main__":
-    client()
+def test_static_method(client):
+    assert client.post("test_class/get?name=hello").json() == {"name": "hello"}
+
+
+def test_default_param(client):
+    res = client.post("test_class/get_name", json={"name": "Hello world"})
+    assert res.json() == {"value": "lo world"}
+
+
+def test_non_default_param(client):
+    res = client.post("test_class/get_name?start=0", json={"name": "Hello world"})
+    assert res.json() == {"value": "Hello world"}
+
+
+# TODO: Error cases (idx out of bounds, bad index, etc.. see that error messages are fine
