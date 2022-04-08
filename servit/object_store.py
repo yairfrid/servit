@@ -1,7 +1,12 @@
 from typing import Generic, TypeVar
 from abc import ABC, abstractmethod
+from pydantic import BaseModel
 
 ObjType = TypeVar("ObjType")
+
+
+class IdModel(BaseModel):
+    id: str
 
 
 class ObjectStore(ABC, Generic[ObjType]):
@@ -11,10 +16,10 @@ class ObjectStore(ABC, Generic[ObjType]):
         self.typ = typ
 
     @abstractmethod
-    def set(obj: ObjType) -> str:
+    def set(self, obj: ObjType) -> str:
         pass
 
-    def get(_id: str) -> ObjType:
+    def get(self, _id: str) -> ObjType:
         pass
 
 
@@ -23,9 +28,9 @@ class InMemoryObjectStore(ObjectStore):
         super().__init__(typ)
         self.map = {}
 
-    def set(obj: ObjType) -> str:
-        self.map |= {id(obj): obj}
-        return id(obj)
+    def set(self, obj: ObjType) -> str:
+        self.map |= {str(id(obj)): obj}
+        return str(id(obj))
 
-    def get(_id: str) -> ObjType:
+    def get(self, _id: str) -> ObjType:
         return self.map[_id]
