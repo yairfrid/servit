@@ -15,11 +15,14 @@ TODO:
 
 [ ] Write a shit load of tests and clean up code
 
-[ ] add full path (directory path and file name) before class name when publishing an endpoint, so we can structure the server using python packages
-
 [ ] Create a test for swagger documentation
 
 [ ] Documentation  
 
-[ ] Type hints
+[ * ] Type hints
+
+[ ] Examples:
+  [ ] TODO app? (Basic Crud InMemory)
+  [ ] Math Expression calculator (With no Memory)
+  [ ] Portfolio manager (with Mongo?)
 
