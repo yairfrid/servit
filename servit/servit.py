@@ -3,7 +3,7 @@ import functools
 import types
 from types import FunctionType
 import itertools
-from typing import Type, Optional, get_type_hints, Callable
+from typing import Type, Optional, get_type_hints, Callable, Type, Set, List, TypeVar
 from fastapi.responses import JSONResponse
 
 from pydantic import BaseModel, create_model
@@ -13,7 +13,9 @@ from .object_store import ObjectStore, IdModel
 JSON_PRIMITIVE_TYPES = ["str", "int", "float", "list", "dict"]
 
 
-def get_methods(cls):
+
+
+def get_methods(cls: Type[BaseModel]) -> Set[Callable]:
     return set(
         [
             val
@@ -23,20 +25,20 @@ def get_methods(cls):
     )
 
 
-def get_method_name(method):
+def get_method_name(method: Callable) -> str:
     return method.__name__
 
 
-def get_method_names(cls):
+def get_method_names(cls: Type[BaseModel]) -> List[str]:
     return [get_method_name(method) for method in get_methods(cls)]
 
 
-def get_parent_methods(cls):
+def get_parent_methods(cls: Type[BaseModel]) -> Set[Callable]:
     parents = cls.__mro__[1:]
     return set(itertools.chain(*[get_methods(parent) for parent in parents]))
 
 
-def camel_to_snake(st):
+def camel_to_snake(st: str) -> str:
     st = st[:1].lower() + st[1:]
     ret = []
     for c in st[1:]:
@@ -48,16 +50,16 @@ def camel_to_snake(st):
     return st[0].lower() + "".join(ret)
 
 
-def snake_to_camel(st):
+def snake_to_camel(st: str) -> str:
     return "".join([sub.capitalize() for sub in st.split("_")])
 
 
-def get_return_type_name(func) -> Optional[str]:
+def get_return_type_name(func: Callable) -> Optional[str]:
     ret = inspect.signature(func).return_annotation
     return ret.__name__ if ret is not inspect.Parameter.empty else None
 
 
-def get_return_type(func) -> Type:
+def get_return_type(func: Callable) -> Type:
     return inspect.signature(func).return_annotation
 
 
@@ -95,7 +97,7 @@ def replace_arg_name(f: Callable, pre: str, post: str) -> Callable:
     return modified
 
 
-def decorate_method_input(method: Callable, cls: Type):
+def decorate_method_input(method: Callable, cls: Type) -> Callable:
     obj_store = getattr(cls, "_servit_obj_store", None)
 
     if not obj_store:
@@ -113,7 +115,7 @@ def decorate_method_input(method: Callable, cls: Type):
 
     return wrapper
 
-def decorate_method_output(method: Callable, cls: Type):
+def decorate_method_output(method: Callable, cls: Type) -> Callable:
     obj_store = getattr(cls, "_servit_obj_store", None)
 
     @functools.wraps(method)
@@ -135,8 +137,8 @@ def decorate_method_output(method: Callable, cls: Type):
     return wrapper
 
 
-def serve(app, *, store: Optional[Type[ObjectStore]] = None):
-    def inner(cls):
+def serve(app, *, store: Optional[Type[ObjectStore]] = None) -> Callable:
+    def inner(cls: Type[BaseModel]) -> Type[BaseModel]:
         if not issubclass(cls, BaseModel):
             raise TypeError("Only pydantic BaseModels can be served")
 

@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Dict
 from abc import ABC, abstractmethod
 from pydantic import BaseModel
 
@@ -23,7 +23,8 @@ class ObjectStore(ABC, Generic[ObjType]):
         pass
 
 
-class InMemoryObjectStore(ObjectStore):
+class InMemoryObjectStore(ObjectStore, Generic[ObjType]):
+    map: Dict[str, ObjType]
     def __init__(self, typ: ObjType):
         super().__init__(typ)
         self.map = {}
