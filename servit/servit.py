@@ -61,9 +61,13 @@ def get_return_type(func) -> Type:
     return inspect.signature(func).return_annotation
 
 
-def replace_arg_name(f, pre, post):
+def replace_arg_name(f: Callable, pre: str, post: str) -> Callable:
+    """
+
+    change parameter 'pre' of f to be named 'post'
+    """
     code_obj = f.__code__
-    new_varnames = tuple([var if var != pre else post for var in code_obj.co_varnames])
+    new_varnames = tuple(var if var != pre else post for var in code_obj.co_varnames)
     new_code_obj = types.CodeType(
         code_obj.co_argcount,
         code_obj.co_posonlyargcount,
@@ -89,6 +93,7 @@ def replace_arg_name(f, pre, post):
         annotations[post] = annotation
     modified.__annotations__ = annotations
     return modified
+
 
 def decorate_method_input(method: Callable, cls: Type):
     obj_store = getattr(cls, "_servit_obj_store", None)

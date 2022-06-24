@@ -34,3 +34,4 @@ class InMemoryObjectStore(ObjectStore):
 
     def get(self, _id: str) -> ObjType:
         return self.map[_id]
+
